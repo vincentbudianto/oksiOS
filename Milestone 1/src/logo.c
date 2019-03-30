@@ -1,9 +1,8 @@
-
-void printLogo();
 void readLogo(char *string, int y, char color);
+void handleInterrupt21 (int AX, int BX, int CX, int DX);
+void printString(char *string);
 
-void printLogo()
-{
+main( void ) {
 	readLogo("     * ***       *                                         * ***           *******                       \0", 1, 0x5);
 	readLogo("    *  ****     **                        *               *  ****         *       ***                    \0", 2, 0xD);
 	readLogo("   *  *  ***    **                       ***             *  *  ***       *         **                    \0", 3, 0x5);
@@ -21,7 +20,7 @@ void printLogo()
 	readLogo("      ***        **   ***                  ***              ***       *     *****                        \0", 15, 0x5);
 	readLogo("                                                                      *                                  \0", 16, 0xD);
 	readLogo("                                                                       **                                \0", 17, 0x5);
-	
+
 	/*readLogo("                         #       #                                                                       \0", 20, 0x3);
 	readLogo("                         #       #                                                                       \0", 21, 0xB);
 	readLogo("                                #                                                                        \0", 22, 0x3);
@@ -44,6 +43,9 @@ void printLogo()
 	readLogo("                                                   #                                                     \0", 42, 0xF);
 	readLogo("                                                  #                                                      \0", 43, 0xE);
 	readLogo("                                                ##                                                       \0", 44, 0xF);*/
+	
+	printString("Press any key to continue\0");
+	interrupt(0x16, 0, 0, 0, 0);
 }
 
 void readLogo(char *string, int y, char color)
@@ -62,3 +64,22 @@ void readLogo(char *string, int y, char color)
 		x++;
 	}
 }
+
+
+void handleInterrupt21 (int AX, int BX, int CX, int DX) {}
+
+void printString(char *string) {
+	int c;
+	int i;
+	i = 0;
+	c = string[0];
+	while (c != '\0')
+	{
+		interrupt(0x10, 0xE00 + c, 0, 0, 0);
+		i++;
+		c = string[i];
+	}
+	interrupt(0x10, 0xE*256+0xa, 0, 0, 0);
+	interrupt(0x10, 0xE*256+0xd, 0, 0, 0);
+}
+
