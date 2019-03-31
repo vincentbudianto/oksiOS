@@ -46,7 +46,6 @@ void getArgc (char *argc);
 void getArgv (char index, char *argv);
 
 void printInt(int x);
-//void validatePath(char *path, int *result, char parentIndex);
 
 char input[100];
 int *success;
@@ -60,41 +59,8 @@ int main() {
 	makeInterrupt21();
 
 	// Milestone 2
-	// int i;    
-	// char curdir;    
-	// char argc;    
-	// char argv[4][16];      
-	// interrupt(0x21, 0x21, &curdir, 0, 0);    
-	// interrupt(0x21, 0x22, &argc, 0, 0);    
-	// for (i = 0; i < argc; ++i) {       
-	// 	interrupt(0x21, 0x23, i, argv[i], 0);    
-	// }
-	//printLogo();
-	//printString("Press any key to continue\0");
-	//interrupt(0x16, 0, 0, 0, 0);
-	
-	/*interrupt(0x21, 0x21, &curdir, 0, 0);
-	interrupt(0x21, 0x22, &argc, 0, 0);
-	for (i = 0; i < argc; ++i) {
-		interrupt(0x21, 0x23, i, argv[i], 0);
-	}
-	interrupt(0x21, 0x20, curdir, argc, argv);*/
 	interrupt(0x21, 0x20, 0xFF, 0, 0);
 	interrupt(0x21, 0xFF << 8 | 0x6, "shell\0", 0x2000, success);
-	// Why &success?
-
-	// Milestone 1 ada di bawah
-	//Bonus 1
-
-	//Bonus 2
-	//interrupt(0x21,0x6,"kalku\0",0x2000,success);
-	
-	//Get Code
-	//interrupt(0x21,0x6,"keyproc\0",0x2000,success);
-	
-	//Show Code
-	//interrupt(0x21,0x4,input,"key.txt\0", success);
-	//interrupt(0x21,0x0,input);
 	while (1);
 }
 
@@ -168,8 +134,6 @@ void printString(char *string) {
 		i++;
 		c = string[i];
 	}
-	//interrupt(0x10, 0xE*256+0xa, 0, 0, 0);
-	//interrupt(0x10, 0xE*256+0xd, 0, 0, 0);
 }
 
 void readString(char *string) {
@@ -183,8 +147,6 @@ void readString(char *string) {
 		if(c == enter){		
 			interrupt(0x10, 0xE*256+'\n', 0, 0, 0); 
 			interrupt(0x10, 0xE*256+'\r', 0, 0, 0);
-			//string[i] = 0xa;
-			//i++;                   
 			string[i] = 0x0;                    
 			break;
 		
@@ -236,7 +198,7 @@ void readFile(char *buffer, char *path, int *result, char parentIndex){
 	char sectors[SECTOR_SIZE];
 	readSector(dirs, DIR_SECTOR);
 	readSector(files, FILE_SECTOR);
-	//Cek path = direktori atau file
+	
 	j=0;
 	while(path[j]!='\0' && path[j]!='/') {
 		j++;
@@ -244,11 +206,9 @@ void readFile(char *buffer, char *path, int *result, char parentIndex){
 	
 	if (path[j]=='\0'){
 		isFile=1;
-		// barusan isFile = 0
 	}
 	else if (path[j]=='/'){
 		isFile=0;
-		// barusan isFile = 1
 	}
 	for (i = 0; i < SECTOR_SIZE; i+=DIR_ENTRY_LENGTH) {
 		check = 1;
@@ -270,7 +230,6 @@ void readFile(char *buffer, char *path, int *result, char parentIndex){
 			if(dirs[i]==parentIndex){
 				idx=div(i,DIR_ENTRY_LENGTH);
 				readFile(buffer,path+jdx+2,result,idx);
-				// tadi parentIndex
 				return;
 			}
 			else{
@@ -303,8 +262,6 @@ void readFile(char *buffer, char *path, int *result, char parentIndex){
 			else{
 				readSector(buffer + j * SECTOR_SIZE, sectors[locSectors + j]);
 			}
-			
-			//tadi dirs[idx]
 		}
 		*result = 0;
 		return;
@@ -336,7 +293,6 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
 	readSector(dirs, DIR_SECTOR);
 	readSector(files, FILE_SECTOR);
 	
-	//Cek path = direktori atau file
 	j=0;
 	while(path[j]!='\0' && path[j]!='/') {
 		j++;
@@ -382,9 +338,6 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
 		}
 	}
 	// validasi sektor/file
-	//printInt(*sectors);
-	//printInt(isFile);
-	//printInt(check);
 	if (check == 0 && isFile == 0) {
 		*sectors = NOT_FOUND;
 		return;
@@ -398,17 +351,16 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
 				break;
 			}
 		}
-		//printInt(fileIndex);
+		
 		if (fileIndex < MAX_FILES) {
 			for (i = 0, sectorCount = 0; i < MAX_BYTE && sectorCount < *sectors; ++i) {
 				if (map[i] == EMPTY) {
 					++sectorCount;
 				}
 			}
-			//printInt(sectorCount);
+			
 			if (sectorCount < *sectors) {
-				//printInt(777);
-				*sectors = INSUFFICIENT_SECTORS; //sectors = -3
+				*sectors = INSUFFICIENT_SECTORS;
 				return;
 			} else {
 				clear(files + fileIndex * DIR_ENTRY_LENGTH, DIR_ENTRY_LENGTH);
@@ -434,43 +386,27 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
 				}
 			}
 		} else {
-			//printInt(1010);
 			*sectors = INSUFFICIENT_DIR_ENTRIES;
 			return;
 		}
 		writeSector(map, MAP_SECTOR);
 		writeSector(files, FILE_SECTOR);
 		writeSector(sectorz, SECTORS);
-		//*sectors = 0;
 	}
 }
 
-void executeProgram(char *path, int segment, int *result, char parentIndex){
-	
-	// executeProgram baru #copas
-	// char curdir;
-	// char argc;
-	// char *argv[2];
-	// curdir = 0xFF; //root
-	// argc = 2;
-	// argv[0] = "abc";
-	// argv[1] = "123";
-	// interrupt(0x21, 0x20, curdir, argc, argv); 
-
-	// executeProgram lama
+void executeProgram(char *path, int segment, int *result, char parentIndex)
+{
 	int i;
 	char buffer[MAX_SECTORS * SECTOR_SIZE];
-	//printString(path);
 	readFile(buffer, path, result, parentIndex);
 	
 	if (*result == 0)
 	{
-		//printString("Success\0");
 		for (i = 0; i < MAX_SECTORS * SECTOR_SIZE; i++)
 		{
 			putInMemory(segment, i, buffer[i]);
 		}
-		//printString(path);
 		launchProgram(segment);
 	}
 	else //if (*result == FALSE)
@@ -482,7 +418,6 @@ void executeProgram(char *path, int segment, int *result, char parentIndex){
 void terminateProgram (int *result) {
 	char shell[6];
 
-	//interrupt(0x21,0xFF << 8 | 0x00,"Yesh\0",0,0);
 	shell[0] = 's';
 	shell[1] = 'h';
 	shell[2] = 'e';
@@ -500,20 +435,15 @@ void makeDirectory(char *path, int *result, char parentIndex){
 	int check;
 	char dirs[SECTOR_SIZE];
 	readSector(dirs, DIR_SECTOR);
-	// char files[SECTOR_SIZE];
-	// readSector(files, FILE_SECTOR);
-	//Cek path = direktori atau file
 	j=0;
 	while(path[j]!='\0' && path[j]!='/') {
 		j++;
 	}
 	if (path[j]=='\0'){
 		isFile=1;
-		//printInt(111);
 	}
 	else if (path[j]=='/'){
 		isFile=0;
-		//printInt(777);
 	}
 	for (i = 0; i < SECTOR_SIZE; i+=DIR_ENTRY_LENGTH) {
 		d=0;
@@ -521,49 +451,30 @@ void makeDirectory(char *path, int *result, char parentIndex){
 		for (j = 0; path[j]!='\0' && path[j]!='/'; j++) {
 			a=path[j];
 			b=dirs[i+j+1];
-			//c=files[i+j];
 			jdx = j;
-			// if (a != b && isFile == 0) {
-			// 	check = 0;
-			// 	break;
-			// }
-			// else if (a != b && isFile == 1) {
-			// 	check = 0;
-			// 	break;
-			// }
+			
 			if (a != b) {
-				if (d==1){
-					//printInt(b);
-					//interrupt(0x10, 0xE00 + path[jdx], 0, 0, 0);
-				}
 				check = 0;
 				break;
 			}
 			else{
-				//interrupt(0x10, 0xE00 + path[jdx], 0, 0, 0);
 				d=1;
 			}
 		}
 		if (check == 1 && isFile==0) {
 			if(dirs[i]==parentIndex){
 				idx=div(i,DIR_ENTRY_LENGTH);
-				//printString(path+jdx+2);
-				//printInt(idx);
 				makeDirectory(path+jdx+2,result,idx);
-				//printInt(*result);
 				return;
 			}
 			else{
-				//printString("oh no!");
 				check = 0;
 			}
 		}
 		else if (check == 1 && isFile==1){
-			// harusnya dirs[i] ga sih? soalnya directory baru
 			if(dirs[i]==parentIndex){
 				idx=div(i,DIR_ENTRY_LENGTH);
 				*result = -2;
-				// result = -2
 				return;
 			}
 		}
@@ -571,7 +482,6 @@ void makeDirectory(char *path, int *result, char parentIndex){
 	// validasi sektor/file
 	if (check == 0 && isFile == 0) {
 		*result = -1;
-		//printString(path);
 		return;
 	} else {
 		//Selesai validasi path
@@ -613,18 +523,16 @@ void deleteFile(char *path, int *result, char parentIndex){
 	char buffer[SECTOR_SIZE];
 	readSector(dirs, DIR_SECTOR);
 	readSector(files, FILE_SECTOR);
-	//Cek path = direktori atau file
+	
 	j=0;
 	while(path[j]!='\0' && path[j]!='/') {
 		j++;
 	}
 	if (path[j]=='\0'){
 		isFile=1;
-		// barusan isFile = 0
 	}
 	else if (path[j]=='/'){
 		isFile=0;
-		// barusan isFile = 1
 	}
 	for (i = 0; i < SECTOR_SIZE; i+=DIR_ENTRY_LENGTH) {
 		check = 1;
@@ -648,7 +556,6 @@ void deleteFile(char *path, int *result, char parentIndex){
 			if(dirs[i]==parentIndex){
 				idx=div(i,DIR_ENTRY_LENGTH);
 				deleteFile(path+jdx+2,result,idx);
-				// tadi parentIndex
 				return;
 			}
 			else{
@@ -710,26 +617,22 @@ void deleteDirectory(char *path, int *success, char parentIndex)
 	clear(sectors,SECTOR_SIZE);
 	readSector(dirs, DIR_SECTOR);
 	readSector(files, FILE_SECTOR);
-	//Cek path = direktori atau file
+	
 	j=0;
-	//printInt(777);
 	while(path[j]!='\0' && path[j]!='/') {
 		j++;
 	}
 	if (path[j]=='\0'){
 		isFile=1;
-		// barusan isFile = 0
 	}
 	else if (path[j]=='/'){
 		isFile=0;
-		// barusan isFile = 1
 	}
 	for (i = 0; i < SECTOR_SIZE; i+=DIR_ENTRY_LENGTH) {
 		check = 1;
 		for (j = 0; path[j] !='\0' && path[j]!='/'; j++) {
 			a=path[j];
 			b=dirs[i+j+1];
-			// c=files[i+j];
 			jdx=j;
 			if (a != b) {
 				check = 0;
@@ -747,8 +650,6 @@ void deleteDirectory(char *path, int *success, char parentIndex)
 			}
 		}
 		else if (check == 1 && isFile==1){
-			// Diganti di sini bro....
-			// dari files[i]
 			if(dirs[i]==parentIndex && dirs[i+1]!='\0'){
 				idx=div(i,DIR_ENTRY_LENGTH);
 				break;
@@ -765,18 +666,6 @@ void deleteDirectory(char *path, int *success, char parentIndex)
 	} else {
 		readSector(map, MAP_SECTOR);
 		readSector(sectors, SECTORS);
-		//printInt(777);
-		// Step 5
-		/*for (i = 0; i < SECTOR_SIZE; i+=DIR_ENTRY_LENGTH) {
-			if (files[i] == idx) { // parent file == idx (direktori ini)
-				files[i] = NUL;
-				for (j = 0; j < DIR_ENTRY_LENGTH; j++)
-				{
-					map[sectors[i + j]] = EMPTY;
-				}
-			}
-		}*/
-		// Step 6
 		deleteDirectory2(map, sectors, dirs, files, idx);
 		for (i = 0;i < DIR_ENTRY_LENGTH; i++){
 			dirs[idx*DIR_ENTRY_LENGTH + i]=EMPTY;
@@ -797,7 +686,6 @@ void deleteDirectory2 (char map[SECTOR_SIZE], char sectors[SECTOR_SIZE], char di
 			for(j=0;j<DIR_ENTRY_LENGTH;j++){
 				dirs[i+j] = EMPTY;
 			}
-			//printInt(777);
 			idx=div(i,DIR_ENTRY_LENGTH);
 			deleteDirectory2(map, sectors, dirs, files, idx);
 		}
@@ -908,59 +796,3 @@ void printInt(int x) {
 	interrupt(0x10, 0xE*256+0xa, 0, 0, 0); 
 	interrupt(0x10, 0xE*256+0xd, 0, 0, 0);	
 }
-
-/*
-void validatePath(char *path, int *result, char parentIndex)
-{
-	//Validasi path
-	int i, j, idx, jdx, isFile;
-	int check;
-	char dirs[SECTOR_SIZE];
-	readSector(dirs, DIR_SECTOR);
-	char files[SECTOR_SIZE];
-	readSector(files, FILE_SECTOR);
-	//Cek path = direktori atau file
-	int j=0;
-	while(path[j]!='\0' || path[j]!='/') {
-		j++;
-	}
-	if (path[j]=='\0'){
-		isFile=1;
-	}
-	else if (path[j]=='/'){
-		isFile=0;
-	}
-	for (i = 0; i < SECTOR_SIZE; i+=DIR_ENTRY_LENGTH) {
-		check = 1;
-		for (j = 1; j !='\0' && path[j]!='/'; j++) {
-			int a,b,c;
-			a=path[j];
-			b=dirs[i+j];
-			c=files[i+j];
-			if (a != b && isFile == 0) {
-				check = 0;
-				break;
-			}
-			else if (a != c && isFile == 1) {
-				check = 0;
-				break;
-			}
-		}
-		if (check == 1 && path[jdx]=='/') {
-			if(dirs[i]==parentIndex){
-				idx=i;
-				validatePath(path+jdx+1,result,idx);
-				break;
-			}
-		}
-		else if (check == 1 && path[jdx]=='\0'){
-			if(files[i]==parentIndex){
-				idx=i;
-				*result=ALREADY_EXISTS;
-				// result = -2
-				return;
-			}
-		}
-	}
-}
-*/

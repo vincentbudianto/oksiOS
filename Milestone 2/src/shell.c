@@ -43,7 +43,6 @@ int main() {
 	char d[512];
 	char y[81];
 	char targetDirectory;
-	//interrupt(0x10, 0xE*256+0xa, 0, 0, 0);
 	interrupt(0x21, 0x21, &parentIndex, 0, 0);
 
 	//prompt
@@ -56,7 +55,6 @@ int main() {
 		interrupt(0x21,0xFF << 8 | 0x00,d + (parentIndex * 16 + 1),0,0);
 		interrupt(0x21,0xFF << 8 | 0x00,"/ ",0,0);
 	}
-	//printInt(parentIndex);
 
 	//reading a command
 	interrupt(0x21,0xFF << 8 | 0x01,command,0,0);
@@ -101,13 +99,11 @@ int main() {
 		if (argc[0]>0){
 			interrupt(0x21,0x23,0,args,0);
 			interrupt(0x21,0x21,parentIndex,0,0);
-			//printString(args);
 			cd(args,parentIndex);
 		}
 		else{
 			parentIndex = 0xFF;
 			interrupt(0x21, 0x20, parentIndex, k, argv);
-			//printString("Moved to root\0");
 		}
 	}
 
@@ -119,20 +115,11 @@ int main() {
 			{
 				if (command[0] == '.' && command[1] == '/')
 				{	
-					//interrupt(0x21,0x21,targetDirectory,0,0);
-					//targetDirectory = 0xFF;
-					//interrupt(0x21, 0x20, targetDirectory, k, argv);
 					interrupt(0x21,parentIndex << 8 | 0x06,command+2,0x2000,success);
 				} else {
-					//interrupt(0x21,0x21,targetDirectory,0,0);
-					//targetDirectory = 0xFF;
-					//interrupt(0x21, 0x20, targetDirectory, k, argv);
 					interrupt(0x21,0xFF << 8 | 0x06,command,0x2000,success);
 				}
 			} else {
-				//interrupt(0x21,0x21,targetDirectory,0,0);
-				//targetDirectory = 0xFF;
-				//interrupt(0x21, 0x20, targetDirectory, k, argv);
 				interrupt(0x21,0xFF << 8 | 0x06,command,0x2000,success);
 			}
 		}
@@ -157,8 +144,6 @@ void printString(char *string) {
 		i++;
 		c = string[i];
 	}
-	//interrupt(0x10, 0xE*256+0xa, 0, 0, 0);
-	//interrupt(0x10, 0xE*256+0xd, 0, 0, 0);
 }
 
 int equals(char* str1 , char* str2)
@@ -191,7 +176,6 @@ void cd(char *arg, char curdir){
 			jdx = j;
 			if (a != b) {
 				check = 0;
-				//printString("Not Found");
 				break;
 			}
 			if (check == 1 && arg[jdx]=='/') {
@@ -203,11 +187,9 @@ void cd(char *arg, char curdir){
 			}
 			else if (check == 1 && arg[jdx]=='\0'){
 				if(dirs[i]==curdir){
-					//printString("Succesionx");
 					idx=i/DIR_ENTRY_LENGTH;
 					parentIndex=idx;
 					interrupt(0x21, 0x20, parentIndex, 0, argv);
-					// result = -2
 					return;
 				}
 			}
@@ -248,8 +230,6 @@ void printInt(int x) {
 			a /= 10;
 		}
 	}
-	//interrupt(0x10, 0xE*256+0xa, 0, 0, 0); 
-	//interrupt(0x10, 0xE*256+0xd, 0, 0, 0);	
 }
 
 int mod(int a, int b) {
