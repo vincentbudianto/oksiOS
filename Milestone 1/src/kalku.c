@@ -201,5 +201,6 @@ void printInt(int x) {
 			x = x - b * a;
 			a /= 10;
 		}
-	}	
+	}
+	
 }

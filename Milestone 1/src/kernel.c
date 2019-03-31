@@ -39,14 +39,14 @@ int main() {
 	//interrupt(0x16, 0, 0, 0, 0);	
 
 	//Bonus 2
-	interrupt(0x21,0x6,"kalku\0",0x2000,success);
+	//interrupt(0x21,0x6,"kalku\0",0x2000,success);
 	
 	//Get Code
 	//interrupt(0x21,0x6,"keyproc\0",0x2000,success);
 	
 	//Show Code
-	//interrupt(0x21,0x4,input,"key.txt\0", success);
-	//interrupt(0x21,0x0,input);
+	interrupt(0x21,0x4,input,"key.txt\0", success);
+	interrupt(0x21,0x0,input);
 	while (1);
 }
 
