@@ -40,14 +40,23 @@ int main() {
  	int i,j,l;
 	char k;
 	char *x;
+	char d[512];
 	char y[81];
 	char targetDirectory;
 	//interrupt(0x10, 0xE*256+0xa, 0, 0, 0);
 	interrupt(0x21, 0x21, &parentIndex, 0, 0);
 
 	//prompt
+	interrupt(0x21, 0x02, d, 0x101, 0);
 	interrupt(0x21,0xFF << 8 | 0x00,"\r$ ",0,0);
-	printInt(parentIndex);
+	if (parentIndex == 0xFF){
+		interrupt(0x21,0xFF << 8 | 0x00,"root/ ",0,0);
+	}
+	else{
+		interrupt(0x21,0xFF << 8 | 0x00,d + (parentIndex * 16 + 1),0,0);
+		interrupt(0x21,0xFF << 8 | 0x00,"/ ",0,0);
+	}
+	//printInt(parentIndex);
 
 	//reading a command
 	interrupt(0x21,0xFF << 8 | 0x01,command,0,0);
@@ -98,7 +107,7 @@ int main() {
 		else{
 			parentIndex = 0xFF;
 			interrupt(0x21, 0x20, parentIndex, k, argv);
-			printString("Moved to root\0");
+			//printString("Moved to root\0");
 		}
 	}
 
@@ -129,6 +138,8 @@ int main() {
 		}
 		else {
 			interrupt(0x21,0,"empty command\0",0,0);
+      interrupt(0x10, 0xE*256+'\n', 0, 0, 0); 
+			interrupt(0x10, 0xE*256+'\r', 0, 0, 0);			
 		}
 	}
   interrupt(0x21,0xFF << 8 | 0x07,0, 0, 0);
@@ -146,8 +157,8 @@ void printString(char *string) {
 		i++;
 		c = string[i];
 	}
-	interrupt(0x10, 0xE*256+0xa, 0, 0, 0);
-	interrupt(0x10, 0xE*256+0xd, 0, 0, 0);
+	//interrupt(0x10, 0xE*256+0xa, 0, 0, 0);
+	//interrupt(0x10, 0xE*256+0xd, 0, 0, 0);
 }
 
 int equals(char* str1 , char* str2)
@@ -237,8 +248,8 @@ void printInt(int x) {
 			a /= 10;
 		}
 	}
-	interrupt(0x10, 0xE*256+0xa, 0, 0, 0); 
-	interrupt(0x10, 0xE*256+0xd, 0, 0, 0);	
+	//interrupt(0x10, 0xE*256+0xa, 0, 0, 0); 
+	//interrupt(0x10, 0xE*256+0xd, 0, 0, 0);	
 }
 
 int mod(int a, int b) {

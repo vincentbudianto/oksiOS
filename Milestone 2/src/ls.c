@@ -26,6 +26,8 @@ int main()
                 res[j - 1] = dirs[i + j];
             }
             interrupt(0x21,curdir << 8 | 0x00,res,0,0);
+            interrupt(0x10, 0xE*256+'\n', 0, 0, 0);
+            interrupt(0x10, 0xE*256+'\r', 0, 0, 0);
 
             for (k = 0; k < 15; k++)
             {
@@ -43,7 +45,8 @@ int main()
                 res[j - 1] = files[i + j];
             }
             interrupt(0x21,curdir << 8 | 0x00,res,0,0);
-            
+            interrupt(0x10, 0xE*256+'\n', 0, 0, 0);
+            interrupt(0x10, 0xE*256+'\r', 0, 0, 0);            
             for (k = 0; k < 15; k++)
             {
                 res[k] = 0;

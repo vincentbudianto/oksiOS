@@ -168,8 +168,8 @@ void printString(char *string) {
 		i++;
 		c = string[i];
 	}
-	interrupt(0x10, 0xE*256+0xa, 0, 0, 0);
-	interrupt(0x10, 0xE*256+0xd, 0, 0, 0);
+	//interrupt(0x10, 0xE*256+0xa, 0, 0, 0);
+	//interrupt(0x10, 0xE*256+0xd, 0, 0, 0);
 }
 
 void readString(char *string) {
@@ -181,18 +181,20 @@ void readString(char *string) {
    	while(1){
 		c = interrupt(0x16, 0, 0, 0, 0);
 		if(c == enter){		
-			interrupt(0x10, 0xE*256+0xa, 0, 0, 0); 
-			interrupt(0x10, 0xE*256+0xd, 0, 0, 0);
+			interrupt(0x10, 0xE*256+'\n', 0, 0, 0); 
+			interrupt(0x10, 0xE*256+'\r', 0, 0, 0);
 			//string[i] = 0xa;
 			//i++;                   
 			string[i] = 0x0;                    
 			break;
 		
 		}else if(c == backspace){
-			interrupt(0x10, 0xE*256+c, 0, 0, 0);     
-			interrupt(0x10, 0xE*256+0x20, 0, 0, 0);  
-			interrupt(0x10, 0xE*256+c, 0, 0, 0);     
-			i--;
+			if (i > 0){
+				interrupt(0x10, 0xE*256+c, 0, 0, 0);     
+				interrupt(0x10, 0xE*256+0x20, 0, 0, 0);  
+				interrupt(0x10, 0xE*256+c, 0, 0, 0);     
+				i--;
+			}
 		}else if (i < 100) {
 			interrupt(0x10, 0xE*256+c, 0, 0, 0);  
 			string[i] = c;
@@ -380,7 +382,7 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
 		}
 	}
 	// validasi sektor/file
-	printInt(*sectors);
+	//printInt(*sectors);
 	//printInt(isFile);
 	//printInt(check);
 	if (check == 0 && isFile == 0) {
@@ -396,16 +398,16 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
 				break;
 			}
 		}
-		printInt(fileIndex);
+		//printInt(fileIndex);
 		if (fileIndex < MAX_FILES) {
 			for (i = 0, sectorCount = 0; i < MAX_BYTE && sectorCount < *sectors; ++i) {
 				if (map[i] == EMPTY) {
 					++sectorCount;
 				}
 			}
-			printInt(sectorCount);
+			//printInt(sectorCount);
 			if (sectorCount < *sectors) {
-				printInt(777);
+				//printInt(777);
 				*sectors = INSUFFICIENT_SECTORS; //sectors = -3
 				return;
 			} else {
@@ -432,7 +434,7 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
 				}
 			}
 		} else {
-			printInt(1010);
+			//printInt(1010);
 			*sectors = INSUFFICIENT_DIR_ENTRIES;
 			return;
 		}
@@ -677,9 +679,11 @@ void deleteFile(char *path, int *result, char parentIndex){
 		{
 			z = sectors[idx*DIR_ENTRY_LENGTH + i];
 			clear(buffer,SECTOR_SIZE);
-			writeSector(buffer,z);
-			map[sectors[idx*DIR_ENTRY_LENGTH + i]] = EMPTY;
-			sectors[idx*DIR_ENTRY_LENGTH + i] = EMPTY;
+			if(sectors[idx*DIR_ENTRY_LENGTH + i]!=0){
+				writeSector(buffer,z);
+				map[sectors[idx*DIR_ENTRY_LENGTH + i]] = EMPTY;
+				sectors[idx*DIR_ENTRY_LENGTH + i] = EMPTY;
+			}
 		}
 		writeSector(map, MAP_SECTOR);
 		writeSector(sectors, SECTORS);
@@ -761,7 +765,7 @@ void deleteDirectory(char *path, int *success, char parentIndex)
 	} else {
 		readSector(map, MAP_SECTOR);
 		readSector(sectors, SECTORS);
-		printInt(777);
+		//printInt(777);
 		// Step 5
 		/*for (i = 0; i < SECTOR_SIZE; i+=DIR_ENTRY_LENGTH) {
 			if (files[i] == idx) { // parent file == idx (direktori ini)
@@ -803,8 +807,10 @@ void deleteDirectory2 (char map[SECTOR_SIZE], char sectors[SECTOR_SIZE], char di
 			}
 			idx=div(i,DIR_ENTRY_LENGTH);
 			for (j = 0; j < DIR_ENTRY_LENGTH; j++) {
-				map[sectors[i + j]] = EMPTY;
-				sectors[i + j] = EMPTY;
+				if(sectors[i+j]!=0){
+					map[sectors[i + j]] = EMPTY;
+					sectors[i + j] = EMPTY;
+				}
 			}
 		}
 	}
