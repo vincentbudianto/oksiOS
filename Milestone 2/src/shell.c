@@ -43,10 +43,11 @@ int main() {
 	char y[81];
 	char targetDirectory;
 	//interrupt(0x10, 0xE*256+0xa, 0, 0, 0);
-	parentIndex = 0xFF;
+	interrupt(0x21, 0x21, &parentIndex, 0, 0);
 
 	//prompt
 	interrupt(0x21,0xFF << 8 | 0x00,"\r$ ",0,0);
+	printInt(parentIndex);
 
 	//reading a command
 	interrupt(0x21,0xFF << 8 | 0x01,command,0,0);
@@ -64,10 +65,10 @@ int main() {
 	while(command[i] != '\0' && command[i] != ' ') {
 		i++;
 	}
+	k=0;
 	if(command[i]==' '){
 		command[i] = '\0';
 		i++;
-		k=0;
 		while(command[i] != '\0'){
 			argv[k][j]=command[i];
 			if (argv[k][j]==' '){
@@ -81,59 +82,48 @@ int main() {
 			i++;
 		};
 		k=k+1;
-		printInt(k);
-		
-		//interrupt(0x10, 0xE00 + argv[0][0], 0, 0, 0);
-		printString(argv[0]);
-		interrupt(0x21, 0x20, parentIndex, k, argv);
 		interrupt(0x21,0x22,x,0,0);
 		interrupt(0x21,0x23,0,y,0);
-		printInt(*x);
-		printString(y);
 	}
+	interrupt(0x21, 0x20, parentIndex, k, argv);
 
 	if(equals(command,"cd\0")) {
 		interrupt(0x21,0x22,argc,0,0);
 		if (argc[0]>0){
-			interrupt(0x21,0x23,1,args,0);
+			interrupt(0x21,0x23,0,args,0);
 			interrupt(0x21,0x21,parentIndex,0,0);
-			printString(args);
+			//printString(args);
 			cd(args,parentIndex);
 		}
 		else{
-			parentIndex=0xFF;
+			parentIndex = 0xFF;
 			interrupt(0x21, 0x20, parentIndex, k, argv);
 			printString("Moved to root\0");
 		}
 	}
 
 	else {
-		printString(command);
-		printString(argv[0]);
 		interrupt(0x21,0x22,argc,0,0);
-		printInt(argc[0]);
 		if (command[0] != '\0')
 		{
 			if (command[1] != '\0')
 			{
 				if (command[0] == '.' && command[1] == '/')
 				{	
-					interrupt(0x21,0x21,targetDirectory,0,0);
-					interrupt(0x21, 0x20, targetDirectory, k, argv);
-					interrupt(0x21,0xFF << 8 | 0x06,command,0x2000,success);
+					//interrupt(0x21,0x21,targetDirectory,0,0);
+					//targetDirectory = 0xFF;
+					//interrupt(0x21, 0x20, targetDirectory, k, argv);
+					interrupt(0x21,parentIndex << 8 | 0x06,command+2,0x2000,success);
 				} else {
-					targetDirectory = 0xFF;
-					if (targetDirectory == 0xFF && k == 1)
-					{
-						interrupt(0x21,0xFF << 8 | 0x00,"Yesh\0",0,0);
-						printString(argv[0]);
-					}
-					interrupt(0x21, 0x20, targetDirectory, k, argv);
+					//interrupt(0x21,0x21,targetDirectory,0,0);
+					//targetDirectory = 0xFF;
+					//interrupt(0x21, 0x20, targetDirectory, k, argv);
 					interrupt(0x21,0xFF << 8 | 0x06,command,0x2000,success);
 				}
 			} else {
-				targetDirectory = 0xFF;
-				interrupt(0x21, 0x20, targetDirectory, k, argv);
+				//interrupt(0x21,0x21,targetDirectory,0,0);
+				//targetDirectory = 0xFF;
+				//interrupt(0x21, 0x20, targetDirectory, k, argv);
 				interrupt(0x21,0xFF << 8 | 0x06,command,0x2000,success);
 			}
 		}
@@ -185,12 +175,12 @@ void cd(char *arg, char curdir){
 	for (i = 0; i < SECTOR_SIZE; i+=DIR_ENTRY_LENGTH) {
 		check = 1;
 		for (j = 1; dirs[i+j] !='\0'; j++) {
-			a=arg[j];
+			a=arg[j-1];
 			b=dirs[i+j];
 			jdx = j;
 			if (a != b) {
 				check = 0;
-				printString("Not Found");
+				//printString("Not Found");
 				break;
 			}
 			if (check == 1 && arg[jdx]=='/') {
@@ -201,8 +191,8 @@ void cd(char *arg, char curdir){
 				}
 			}
 			else if (check == 1 && arg[jdx]=='\0'){
-				// harusnya dirs[i] ga sih? soalnya directory baru
 				if(dirs[i]==curdir){
+					//printString("Succesionx");
 					idx=i/DIR_ENTRY_LENGTH;
 					parentIndex=idx;
 					interrupt(0x21, 0x20, parentIndex, 0, argv);
