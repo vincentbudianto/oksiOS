@@ -727,52 +727,43 @@ void terminateProgramNoResume(int *result)
 
 void printProcTable()
 {
-	struct PCB *currPCB;
-    int i, x, status;
+	int i, x;
 
-	for (i = 0; i < 8; i++)
-    {
-        setKernelDataSegment();
-        currPCB = &pcbPool[i];
-    
-	    if (currPCB != NULL)
-        {
-            interrupt(0x21, 0x00, "PCB ", 0, 0);
-			x = ((currPCB->segment >> 12)-2);
-            printInt(x);
-            interrupt(0x21, 0x00, ": ", 0, 0);
-            status = currPCB->state;
+	setKernelDataSegment();
+	
+	for (i = 0; i &lt; 8; i++)
+	{
+		interrupt(0x21, 0x00, "PCB ", 0, 0);
+		x = ((pcbPool[i].segment >> 12)-2);
+		printInt(x);
+		interrupt(0x21, 0x00, ": ", 0, 0);
 
-            if (status == 0)
-            {
-                interrupt(0x21, 0x00, "DEFUNCT", 0, 0);
-            }
-            else if (status == 1)
-            {
-                interrupt(0x21, 0x00, "RUNNING", 0, 0);
-            }
-            else if (status == 2)
-            {
-                interrupt(0x21, 0x00, "STARTING", 0, 0);
-            }
-            else if (status == 3)
-            {
-                interrupt(0x21, 0x00, "READY", 0, 0);
-            }
-            else
-            {
-                interrupt(0x21, 0x00, "PAUSED", 0, 0);
-            }
+		if (pcbPool[i].state == 0)
+		{
+			interrupt(0x21, 0x00, "DEFUNCT", 0, 0);
+		}
+		else if (pcbPool[i].state == 1)
+		{
+			interrupt(0x21, 0x00, "RUNNING", 0, 0);
+		}
+		else if (pcbPool[i].state == 2)
+		{
+			interrupt(0x21, 0x00, "STARTING", 0, 0);
+		}
+		else if (pcbPool[i].state == 3)
+		{
+			interrupt(0x21, 0x00, "READY", 0, 0);
+		}
+		else
+		{
+			interrupt(0x21, 0x00, "PAUSED", 0, 0);
+		}
 
-            interrupt(0x10, 0xE*256+'\n', 0, 0, 0);
-	        interrupt(0x10, 0xE*256+'\r', 0, 0, 0);
-        }
-
-		printString("");
+		interrupt(0x10, 0xE*256+'\n', 0, 0, 0);
+		interrupt(0x10, 0xE*256+'\r', 0, 0, 0);
 	}
 
-    restoreDataSegment();
-	printString("");
+	restoreDataSegment();
 }
 
 int	mod(int a, int b)
